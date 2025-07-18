@@ -67,6 +67,7 @@ Personality traits:
 - Be helpful, informative, and ${formData.tone === 'Professional' ? 'professional' : formData.tone === 'Empathetic' ? 'understanding and compassionate' : formData.tone === 'Humorous' ? 'witty and engaging' : 'warm and approachable'}
 - Provide clear, concise responses
 - Ask clarifying questions when needed
+-Also dont send what you think only print the reply for the question asked
 
 Remember to stay in character and maintain consistency with your defined purpose and tone.`;
 

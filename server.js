@@ -1,6 +1,6 @@
-const express = require('express');
-const cors = require('cors');
-const fetch = require('node-fetch');
+import express from 'express';
+import cors from 'cors';
+import fetch from 'node-fetch';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -28,13 +28,9 @@ app.get('/api/health', async (req, res) => {
 app.get('/api/models', async (req, res) => {
   try {
     const response = await fetch(`${OLLAMA_URL}/api/tags`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch models from Ollama');
-    }
     const data = await response.json();
     res.json({ models: data.models || [] });
   } catch (error) {
-    console.error('Error fetching models:', error);
     res.status(500).json({ error: 'Failed to fetch models' });
   }
 });
@@ -48,20 +44,15 @@ app.post('/api/chat', async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    // Prepare messages for Ollama
     const messages = [
       ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
       ...history.map(h => ({ role: h.role, content: h.content })),
       { role: 'user', content: message }
     ];
 
-    console.log(`Sending request to Ollama with model: ${model}`);
-    
     const response = await fetch(`${OLLAMA_URL}/api/chat`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model,
         messages,
@@ -70,33 +61,24 @@ app.post('/api/chat', async (req, res) => {
           temperature: 0.7,
           top_p: 0.9,
           num_predict: 2048,
-        },
+        }
       }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Ollama API error:', response.status, errorText);
-      throw new Error(`Ollama API error: ${response.status}`);
-    }
-
     const data = await response.json();
-    console.log('Ollama response received');
-    
-    res.json({ 
+    res.json({
       response: data.message?.content || 'No response received',
-      model: model
+      model,
     });
   } catch (error) {
-    console.error('Error in chat endpoint:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to get response from AI model',
-      details: error.message 
+      details: error.message
     });
   }
 });
 
-// Generate endpoint (alternative to chat)
+// Generate endpoint
 app.post('/api/generate', async (req, res) => {
   try {
     const { prompt, model = 'llama3' } = req.body;
@@ -105,13 +87,9 @@ app.post('/api/generate', async (req, res) => {
       return res.status(400).json({ error: 'Prompt is required' });
     }
 
-    console.log(`Generating response with model: ${model}`);
-    
     const response = await fetch(`${OLLAMA_URL}/api/generate`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model,
         prompt,
@@ -120,32 +98,24 @@ app.post('/api/generate', async (req, res) => {
           temperature: 0.7,
           top_p: 0.9,
           num_predict: 2048,
-        },
+        }
       }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Ollama API error:', response.status, errorText);
-      throw new Error(`Ollama API error: ${response.status}`);
-    }
-
     const data = await response.json();
-    console.log('Ollama response received');
-    
-    res.json({ 
+    res.json({
       response: data.response || 'No response received',
-      model: model
+      model,
     });
   } catch (error) {
-    console.error('Error in generate endpoint:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to generate response',
-      details: error.message 
+      details: error.message
     });
   }
 });
 
+// Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📡 Ollama URL: ${OLLAMA_URL}`);
