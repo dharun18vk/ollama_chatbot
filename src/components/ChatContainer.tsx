@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export const ChatContainer: React.FC = () => {
+  console.log('ChatContainer rendering...'); // Debug line to force rebuild
   const { messages, isLoading, currentAgent, addMessage, setLoading, setAvailableModels } = useChatStore();
   const { toast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
