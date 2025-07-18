@@ -97,7 +97,7 @@ export const useChatStore = create<ChatState>()(
       currentAgent: defaultAgent,
       
       // Model state
-      availableModels: ['llama3', 'mistral', 'codellama'],
+      availableModels: ['llama3', 'gemma', 'deepseek-r1', 'mistral', 'codellama'],
       
       // Chat actions
       addMessage: (message) => set((state) => ({
