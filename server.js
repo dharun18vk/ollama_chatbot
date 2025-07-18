@@ -42,7 +42,7 @@ app.get('/api/models', async (req, res) => {
 // Chat endpoint
 app.post('/api/chat', async (req, res) => {
   try {
-    const { message, model = 'llama3', history = [] } = req.body;
+    const { message, model = 'llama3', history = [], systemPrompt } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
@@ -50,6 +50,7 @@ app.post('/api/chat', async (req, res) => {
 
     // Prepare messages for Ollama
     const messages = [
+      ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
       ...history.map(h => ({ role: h.role, content: h.content })),
       { role: 'user', content: message }
     ];

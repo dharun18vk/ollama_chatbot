@@ -1,13 +1,14 @@
-import { Trash2, Cpu, Moon, Sun } from 'lucide-react';
+import { Trash2, Cpu, Moon, Sun, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useChatStore } from '@/store/chatStore';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export const ChatHeader: React.FC = () => {
-  const { selectedModel, availableModels, setSelectedModel, clearMessages, messages } = useChatStore();
+  const { currentAgent, clearMessages, messages } = useChatStore();
   const { toast } = useToast();
   const [isDark, setIsDark] = useState(false);
 
@@ -40,7 +41,7 @@ export const ChatHeader: React.FC = () => {
                 <Cpu className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-semibold text-foreground">AI Chat</h1>
+                <h1 className="text-lg font-semibold text-foreground">Modular AI Platform</h1>
                 <p className="text-xs text-muted-foreground">
                   {messages.length} messages
                 </p>
@@ -49,21 +50,26 @@ export const ChatHeader: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <Select value={selectedModel} onValueChange={setSelectedModel}>
-              <SelectTrigger className={cn(
-                'w-40 bg-card/50 backdrop-blur-sm border-glass-border',
-                'hover:bg-card/70 transition-all duration-200'
-              )}>
-                <SelectValue placeholder="Select model" />
-              </SelectTrigger>
-              <SelectContent className="bg-card/90 backdrop-blur-sm border-glass-border">
-                {availableModels.map((model) => (
-                  <SelectItem key={model} value={model} className="hover:bg-muted/50">
-                    {model}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className={cn(
+              'px-3 py-2 rounded-md bg-card/50 backdrop-blur-sm border border-glass-border',
+              'text-sm text-foreground min-w-40 text-center'
+            )}>
+              {currentAgent?.name || 'No Agent Selected'}
+            </div>
+
+            <Link to="/agents">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  'w-9 h-9 p-0 hover:bg-primary/10 hover:text-primary',
+                  'transition-all duration-200 hover:shadow-elegant'
+                )}
+                title="Manage agents"
+              >
+                <Settings className="w-4 h-4" />
+              </Button>
+            </Link>
 
             <Button
               variant="ghost"

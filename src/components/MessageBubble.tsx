@@ -1,4 +1,4 @@
-import { Message } from '@/store/chatStore';
+import { Message, useChatStore } from '@/store/chatStore';
 import { cn } from '@/lib/utils';
 import { Bot, User } from 'lucide-react';
 
@@ -7,7 +7,9 @@ interface MessageBubbleProps {
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
+  const { agents } = useChatStore();
   const isUser = message.role === 'user';
+  const messageAgent = message.agentId ? agents.find(a => a.id === message.agentId) : null;
   
   return (
     <div className={cn(
@@ -31,6 +33,13 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
           {message.content}
         </p>
         <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center gap-2">
+            {!isUser && messageAgent && (
+              <span className="text-xs opacity-70 font-medium">
+                {messageAgent.name}
+              </span>
+            )}
+          </div>
           <span className="text-xs opacity-60">
             {new Date(message.timestamp).toLocaleTimeString([], { 
               hour: '2-digit', 

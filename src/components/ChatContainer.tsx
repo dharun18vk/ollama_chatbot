@@ -4,11 +4,12 @@ import { MessageBubble } from './MessageBubble';
 import { TypingIndicator } from './TypingIndicator';
 import { ChatInput } from './ChatInput';
 import { ChatHeader } from './ChatHeader';
+import { AgentSelector } from './AgentSelector';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export const ChatContainer: React.FC = () => {
-  const { messages, isLoading, selectedModel, addMessage, setLoading, setAvailableModels } = useChatStore();
+  const { messages, isLoading, currentAgent, addMessage, setLoading, setAvailableModels } = useChatStore();
   const { toast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
@@ -53,8 +54,11 @@ export const ChatContainer: React.FC = () => {
     setLoading(true);
 
     try {
-      // Here you would normally make an API call to your backend
-      // For now, we'll simulate the API call
+      // Filter messages for current agent and prepare history
+      const agentMessages = messages.filter(msg => 
+        !msg.agentId || msg.agentId === currentAgent?.id
+      );
+      
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -62,7 +66,9 @@ export const ChatContainer: React.FC = () => {
         },
         body: JSON.stringify({
           message: content,
-          model: selectedModel,
+          model: currentAgent?.model || 'llama3',
+          systemPrompt: currentAgent?.systemPrompt,
+          history: agentMessages.slice(-10), // Send last 10 messages for context
         }),
       });
 
@@ -82,7 +88,7 @@ export const ChatContainer: React.FC = () => {
       
       // Add error message
       addMessage({ 
-        content: `I apologize, but I'm having trouble connecting to the AI model. Please check that:\n\n• Ollama is installed and running\n• The model "${selectedModel}" is available\n• Your backend server is running\n\nYou can start Ollama with: ollama serve`,
+        content: `I apologize, but I'm having trouble connecting to the AI model. Please check that:\n\n• Ollama is installed and running\n• The model "${currentAgent?.model || 'llama3'}" is available\n• Your backend server is running\n\nYou can start Ollama with: ollama serve`,
         role: 'assistant' 
       });
       
@@ -99,6 +105,7 @@ export const ChatContainer: React.FC = () => {
   return (
     <div className="flex flex-col h-screen bg-gradient-subtle">
       <ChatHeader />
+      <AgentSelector />
       
       <div className="flex-1 flex flex-col min-h-0">
         <ScrollArea className="flex-1 px-4" ref={scrollRef}>
@@ -112,9 +119,9 @@ export const ChatContainer: React.FC = () => {
                   Welcome to AI Chat
                 </h2>
                 <p className="text-muted-foreground max-w-md mb-6">
-                  Start a conversation with your local AI model. 
+                  Start a conversation with your AI agent. 
                   {connectionStatus === 'connected' ? 
-                    'Everything is set up and ready to go!' : 
+                    `${currentAgent?.name || 'Your agent'} is ready to help!` : 
                     'Make sure Ollama is running and your model is available.'
                   }
                 </p>
@@ -128,7 +135,7 @@ export const ChatContainer: React.FC = () => {
                     <ul className="text-sm text-destructive/80 mt-2 text-left">
                       <li>• Ollama is installed and running</li>
                       <li>• Backend server is running on port 3001</li>
-                      <li>• Model "{selectedModel}" is available</li>
+                      <li>• Model "{currentAgent?.model || 'llama3'}" is available</li>
                     </ul>
                   </div>
                 )}
@@ -137,7 +144,7 @@ export const ChatContainer: React.FC = () => {
                   <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 max-w-md">
                     <h3 className="font-medium text-primary mb-2">✅ Connected</h3>
                     <p className="text-sm text-primary/80">
-                      Ready to chat with {selectedModel}!
+                      Ready to chat with {currentAgent?.name || 'Default Assistant'}!
                     </p>
                   </div>
                 )}
